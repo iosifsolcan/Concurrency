@@ -1,15 +1,14 @@
 package org.example.FestivalStatisticsThread;
 
-import lombok.Data;
+import lombok.Getter;
 import org.example.FestivalAttendeeThread.FestivalAttendeeThread;
 import org.example.FestivalGate.FestivalGate;
 
 import java.util.List;
 
-@Data
-public class FestivalStatisticsThread extends Thread implements Runnable {
+@Getter
+public class FestivalStatisticsThread extends Thread {
   private FestivalGate gate;
-  private FestivalAttendeeThread attendeeThread;
   private List<FestivalAttendeeThread> attendeeThreadList;
   private int sumOfFullVipTicket = 0;
   private int sumOfOneDayTicket = 0;

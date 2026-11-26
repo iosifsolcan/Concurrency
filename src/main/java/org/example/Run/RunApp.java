@@ -1,6 +1,6 @@
 package org.example.Run;
 
-import lombok.Data;
+import lombok.Getter;
 import org.example.FestivalAttendeeThread.FestivalAttendeeThread;
 import org.example.FestivalGate.FestivalGate;
 import org.example.FestivalStatisticsThread.FestivalStatisticsThread;
@@ -9,7 +9,7 @@ import org.example.TicketType.TicketType;
 import java.util.*;
 import java.util.logging.Logger;
 
-@Data
+@Getter
 public class RunApp {
   private FestivalGate gate;
   private FestivalGate festivalGate = new FestivalGate(TicketType.TicketTypes.FULL, gate);
@@ -19,27 +19,22 @@ public class RunApp {
   private String yesOrNo;
   private boolean isEmpty = true;
   private Scanner scanner = new Scanner(System.in);
-  private List<FestivalAttendeeThread> finalAttendeeList = new LinkedList<>();
+  private Queue<String> finalQueueAttendeeList = new LinkedList<>();
   private static final Logger log = Logger.getLogger(RunApp.class.getName());
   private boolean running = true;
 
   public void run() {
-
-    if (festivalGate.ticketTypesNumberIsValid()) {
-      System.out.println("TicketTypes number is correct!");
-      festivalAttendeeThreadList = attendeeThread.addTicketTypes();
-    } else {
-      System.out.println("TicketTypes number is incorrect! The application can't work like that!!");
-      log.severe("The application will be stopped!");
-      running = false;
-    }
+    log.info("The application start!");
+    festivalAttendeeThreadList = attendeeThread.addTicketTypes();
 
     if (running) {
-      if (festivalGate.listOfAttendeesIsValid()) {
-        System.out.println("The list of attendees is valid! ");
+      if (festivalGate.listOfAttendeesIsValid(festivalAttendeeThreadList)) {
+        log.info("The list of attendees is valid!");
         isEmpty = false;
       } else {
-        System.out.println("The list of attendees is not valid! ");
+        log.warning("The number of attendees u entered is 0, try again!");
+        RunApp runApp = new RunApp();
+        runApp.run();
         running = false;
       }
     }
@@ -51,7 +46,7 @@ public class RunApp {
           Thread thread = new Thread(attendeeThread);
           thread.start();
           try {
-            thread.sleep(5000);
+            Thread.sleep(5000);
             thread.join();
           } catch (InterruptedException e) {
             System.out.println(e.getMessage());
@@ -77,10 +72,11 @@ public class RunApp {
       System.out.println("Wanna remove in queue?");
       yesOrNo = scanner.nextLine();
       if (yesOrNo.equalsIgnoreCase("yes")) {
-        finalAttendeeList = attendeeThread.removeTicketTypes(festivalAttendeeThreadList);
-        System.out.println("Remained tickets after the removal from queue:");
-        festivalAttendeeThreadList.stream()
-            .forEach(attendee -> System.out.println(attendee.getTicketType()));
+        finalQueueAttendeeList = attendeeThread.removeTicketTypes(festivalAttendeeThreadList);
+        if (!finalQueueAttendeeList.isEmpty()) {
+          System.out.println("Remained tickets after the removal from queue:");
+          finalQueueAttendeeList.stream().forEach(ticketType -> System.out.println(ticketType));
+        } else log.info("No ticketTypes remained after the removal!");
       }
     }
   }
